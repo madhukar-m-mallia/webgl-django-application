@@ -3,36 +3,116 @@
 		<title>WebGL-Django-Application</title>
 		<style>
 			body { margin: 0; }
-			canvas { width: 100%; height: 100% }
+			/*div#renderCanvas { width: 60%; height: 30% }*/
 		</style>
-	</head>
-	<body>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+	
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r71/three.min.js"></script>
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+		<!-- Optional theme -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+
+		<!-- Latest compiled and minified JavaScript -->
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+		<script src="/static/OBJLoader.js"></script>
 		<script>
-			var scene = new THREE.Scene();
-			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
+		$(function () {
 
-			var renderer = new THREE.WebGLRenderer();
-			renderer.setSize( window.innerWidth, window.innerHeight );
-			document.body.appendChild( renderer.domElement );
+				var scene = new THREE.Scene();
+				var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 
-			var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-			var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
-			var cube = new THREE.Mesh( geometry, material );
-			scene.add( cube );
+				var renderer = new THREE.WebGLRenderer();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				$('#renderCanvas').append( renderer.domElement );
 
-			camera.position.z = 5;
 
-			var render = function () {
-				requestAnimationFrame( render );
+				var geometry = new THREE.BoxGeometry( 1, 1, 1 );
+				var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+				var cube = new THREE.Mesh( geometry, material );
+				// scene.add( cube );
 
-				cube.rotation.x += 0.01;
-				cube.rotation.y += 0.01;
+				camera.position.z = 5;
 
-				renderer.render(scene, camera);
-			};
+				var manager = new THREE.LoadingManager();
+				manager.onProgress = function ( item, loaded, total ) {
+					console.log( item, loaded, total );
+				};
 
-			render();
+				var onProgress = function ( xhr ) {
+					if ( xhr.lengthComputable ) {
+						var percentComplete = xhr.loaded / xhr.total * 100;
+						console.log( Math.round(percentComplete, 2) + '% downloaded' );
+					}
+				};
+				var onError = function ( xhr ) {
+				};
+
+				// $('#uploadButton').on('click', function(){
+				// 	console.log($('#uploadButton'));
+				// });
+				var loader = new THREE.OBJLoader( manager );
+				$('input[type="file"]').change(function(e){
+            var fileName = e.target.files[0].name;
+            console.log('The file "' + fileName +  '" has been selected.');
+            loader.load( '/static/navigator.obj', function ( object ) {
+							object.traverse( function ( child ) {
+								if ( child instanceof THREE.Mesh ) {
+									child.material.map = texture;
+								}
+							} );
+							object.position.y = - 80;
+							scene.add( object );
+						}, onProgress, onError );
+        });
+
+				
+				// loader.load( 'obj/male02/male02.obj', function ( object ) {
+				// 	object.traverse( function ( child ) {
+				// 		if ( child instanceof THREE.Mesh ) {
+				// 			child.material.map = texture;
+				// 		}
+				// 	} );
+				// 	object.position.y = - 80;
+				// 	scene.add( object );
+				// }, onProgress, onError );
+
+				var render = function () {
+					requestAnimationFrame( render );
+
+					cube.rotation.x += 0.01;
+					cube.rotation.y += 0.01;
+
+					renderer.render(scene, camera);
+					$('#renderCanvas').css("height: 400px; width: 600px;")
+				};
+
+				render();
+			});
 		</script>
+		</head>
+	<body>
+		<nav class="navbar navbar-default">
+		  <div class="container-fluid">
+		    <div class="navbar-header">
+		      <a class="navbar-brand" href="#">
+		        <img alt="Brand" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAMAAAC7IEhfAAAA81BMVEX///9VPnxWPXxWPXxWPXxWPXxWPXxWPXz///9hSYT6+vuFc6BXPn37+vz8+/z9/f2LeqWMe6aOfqiTg6uXiK5bQ4BZQX9iS4VdRYFdRYJfSINuWI5vWY9xXJF0YJR3Y5Z4ZZd5ZZd6Z5h9apq0qcW1qsW1q8a6sMqpnLyrn76tocCvpMGwpMJoUoprVYxeRoJjS4abjLGilLemmbrDutDFvdLPx9nX0eDa1OLb1uPd1+Td2OXe2eXh3Ofj3+nk4Orl4evp5u7u7PLv7fPx7/T08vb08/f19Pf29Pj39vn6+fuEcZ9YP35aQn/8/P1ZQH5fR4PINAOdAAAAB3RSTlMAIWWOw/P002ipnAAAAPhJREFUeF6NldWOhEAUBRvtRsfdfd3d3e3/v2ZPmGSWZNPDqScqqaSBSy4CGJbtSi2ubRkiwXRkBo6ZdJIApeEwoWMIS1JYwuZCW7hc6ApJkgrr+T/eW1V9uKXS5I5GXAjW2VAV9KFfSfgJpk+w4yXhwoqwl5AIGwp4RPgdK3XNHD2ETYiwe6nUa18f5jYSxle4vulw7/EtoCdzvqkPv3bn7M0eYbc7xFPXzqCrRCgH0Hsm/IjgTSb04W0i7EGjz+xw+wR6oZ1MnJ9TWrtToEx+4QfcZJ5X6tnhw+nhvqebdVhZUJX/oFcKvaTotUcvUnY188ue/n38AunzPPE8yg7bAAAAAElFTkSuQmCC">
+		      </a>
+		    </div>
+		  </div>
+		</nav>
+		<div id="renderCanvas"></div>
+		<div class="btn-group" role="group" aria-label="...">
+			<form action="/upload" method="post" enctype="multipart/form-data">
+			<!-- <div class="btn btn-default"> -->
+				<input type="file">
+				<!-- <input type="button" id="uploadButton" class="btn btn-default">Upload</button> -->
+			<!-- </div> -->
+		  
+<!-- 		  <button type="button" class="btn btn-default">Middle</button>
+		  <button type="button" class="btn btn-default">Right</button> -->
+		</div>
 	</body>
 </html>

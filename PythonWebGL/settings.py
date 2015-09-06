@@ -114,3 +114,7 @@ STATIC_URL = '/static/'
 
 LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = 'django.contrib.auth.views.login'
+
+
+MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'upload')
+MEDIA_URL = '/upload/'
